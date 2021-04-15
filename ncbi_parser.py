@@ -20,7 +20,7 @@ class NCBIParser:
     file_name = "ncbi.xlsx"
     host = "https://pubmed.ncbi.nlm.nih.gov/"
     pagination = 200
-        
+
     def __call__(self) -> None:
         content = self.get_content()
         rows = self.get_rows(content)
@@ -31,9 +31,9 @@ class NCBIParser:
             self.host,
             params={
                 "term": self.term_param,
-                "filter": "datesearch.y_10", 
+                "filter": "datesearch.y_10",
                 "format": "abstract",
-                "size": self.pagination, 
+                "size": self.pagination,
             },
             timeout=None,
         )
@@ -46,7 +46,7 @@ class NCBIParser:
         articles = soup.select('.results-article')
 
         for article in articles:
-            yield ( 
+            yield (
                 article.select_one('h1.heading-title').text.replace('\n', '').strip(),
                 urljoin(cls.host, article.h1.a['href']),
                 cls._get_article_keywords(article)
@@ -55,14 +55,14 @@ class NCBIParser:
     @staticmethod
     def _get_article_keywords(article: Tag) -> str:
         if not (keywords := article.select_one('.abstract > p')):
-            return 
+            return
 
         cleaned_keywoards = re.sub(r'[ ]{2,}|\n|\.|Keywords:', '', keywords.text)
         return cleaned_keywoards.replace(";", ",")
 
     @classmethod
     def save_to_excel(cls, rows: Iterable[row_type]) -> None:
-        wb = Workbook()    
+        wb = Workbook()
         ws = wb.active
 
         ws.append(cls.excel_fields)
@@ -85,3 +85,4 @@ class NCBIParser:
 
 if __name__ == "__main__":
     NCBIParser()()
+
